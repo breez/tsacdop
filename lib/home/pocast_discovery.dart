@@ -4,7 +4,11 @@ import 'package:provider/provider.dart';
 
 import '../local_storage/key_value_storage.dart';
 import '../service/search_api.dart';
+import '../service/search_api.dart';
+import '../service/search_api.dart';
 import '../state/search_state.dart';
+import '../type/search_api/index_episode.dart';
+import '../type/search_api/index_podcast.dart';
 import '../type/search_api/search_genre.dart';
 import '../type/search_api/searchpodcast.dart';
 import '../util/extension_helper.dart';
@@ -149,14 +153,14 @@ class DiscoveryPageState extends State<DiscoveryPage> {
       });
 
   Future<List<OnlinePodcast>> _getTopPodcasts({int page}) async {
-    final searchEngine = ListenNotesSearch();
-    var searchResult = await searchEngine.fetchBestPodcast(
-      genre: '',
-      page: page,
-    );
-    final podcastTopList =
-        searchResult.podcasts.map((e) => e?.toOnlinePodcast).toList();
-    _podcastList.addAll(podcastTopList.cast());
+    // final searchEngine = PodcastsIndexSearch();
+    // var searchResult = await searchEngine.fetchBestPodcast(
+    //   genre: '',
+    //   page: page,
+    // );
+    // final podcastTopList =
+    //     searchResult.podcasts.map((e) => e?.toOnlinePodcast).toList();
+    // _podcastList.addAll(podcastTopList.cast());
     return _podcastList;
   }
 
@@ -388,15 +392,16 @@ class __TopPodcastListState extends State<_TopPodcastList> {
   bool _loading;
   int _page;
   Future<List<OnlinePodcast>> _getTopPodcasts({Genre genre, int page}) async {
-    final searchEngine = ListenNotesSearch();
-    var searchResult = await searchEngine.fetchBestPodcast(
-      genre: genre.id,
-      page: page,
-    );
-    final podcastTopList =
-        searchResult.podcasts.map((e) => e?.toOnlinePodcast).toList();
-    _podcastList.addAll(podcastTopList.cast());
-    _loading = false;
+    // final searchEngine = PodcastsIndexSearch();
+    // var searchResult = PodcastIndexSearchResult();
+    // await searchEngine.fetchBestPodcast(
+    //   genre: genre.id,
+    //   page: page,
+    // );
+    // final podcastTopList =
+    //     searchResult.podcasts.map((e) => e?.toOnlinePodcast).toList();
+    // _podcastList.addAll(podcastTopList.cast());
+    // _loading = false;
     return _podcastList;
   }
 

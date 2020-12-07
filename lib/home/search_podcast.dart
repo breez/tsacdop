@@ -213,9 +213,6 @@ class MyHomePageDelegate extends SearchDelegate<int> {
       );
     } else {
       switch (_searchEngine) {
-        case SearchEngine.listenNotes:
-          return _ListenNotesSearch(query: query);
-          break;
         case SearchEngine.podcastIndex:
           return _PodcastIndexSearch(query: query);
         default:
@@ -393,159 +390,6 @@ class _RssResultState extends State<RssResult> {
             ]),
           )
         ],
-      ),
-    );
-  }
-}
-
-class _ListenNotesSearch extends StatefulWidget {
-  final String query;
-  _ListenNotesSearch({this.query, Key key}) : super(key: key);
-
-  @override
-  __ListenNotesSearchState createState() => __ListenNotesSearchState();
-}
-
-class __ListenNotesSearchState extends State<_ListenNotesSearch> {
-  final List<OnlinePodcast> _podcastList = [];
-  int _nextOffset = 0;
-  int _offset;
-  bool _loading = false;
-  bool _loadError = false;
-  Future _searchFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _searchFuture = _getListenNotesList(widget.query, _nextOffset);
-  }
-
-  Future<void> _saveHistory(String query) async {
-    final storage = KeyValueStorage(searchHistoryKey);
-    final history = await storage.getStringList();
-    if (!history.contains(query)) {
-      if (history.length >= 6) {
-        history.removeLast();
-      }
-      history.insert(0, query);
-      await storage.saveStringList(history);
-    }
-  }
-
-  Future<List<OnlinePodcast>> _getListenNotesList(
-      String searchText, int nextOffset) async {
-    if (nextOffset == 0) _saveHistory(searchText);
-    final searchEngine = ListenNotesSearch();
-    var searchResult;
-    try {
-      searchResult = await searchEngine.searchPodcasts(
-          searchText: searchText, nextOffset: nextOffset);
-    } catch (e) {
-      _loadError = true;
-      _loading = false;
-      return [];
-    }
-    _offset = searchResult.nextOffset;
-    var searchList = <OnlinePodcast>[...searchResult.results.cast().toList()];
-    _podcastList.addAll(searchList);
-    _loading = false;
-    return _podcastList;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return PodcastSlideup(
-      searchEngine: SearchEngine.listenNotes,
-      child: FutureBuilder<List>(
-        future: _searchFuture,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData && widget.query != null) {
-            return Container(
-              padding: EdgeInsets.only(top: 200),
-              alignment: Alignment.topCenter,
-              child: CircularProgressIndicator(),
-            );
-          }
-          if (snapshot.data.isEmpty) {
-            if (_loadError) {
-              return Container(
-                padding: EdgeInsets.only(top: 200),
-                alignment: Alignment.topCenter,
-                child: Text('Network error.',
-                    style: context.textTheme.headline6
-                        .copyWith(color: Colors.red)),
-              );
-            } else {
-              return Container(
-                padding: EdgeInsets.only(top: 200),
-                alignment: Alignment.topCenter,
-                child: Text('No result.',
-                    style: context.textTheme.headline6
-                        .copyWith(color: context.accentColor)),
-              );
-            }
-          }
-          var content = snapshot.data;
-          return CustomScrollView(
-            slivers: [
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return SearchResult(onlinePodcast: content[index]);
-                  },
-                  childCount: content.length,
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10.0, bottom: 20.0),
-                      child: OutlineButton(
-                        highlightedBorderColor: context.accentColor,
-                        splashColor: context.accentColor.withOpacity(0.5),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(100)),
-                        child: _loading
-                            ? SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ))
-                            : Text(context.s.loadMore),
-                        onPressed: () => _loading
-                            ? null
-                            : setState(
-                                () {
-                                  _loading = true;
-                                  _nextOffset = _offset;
-                                  _searchFuture = _getListenNotesList(
-                                      widget.query, _nextOffset);
-                                },
-                              ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SliverToBoxAdapter(
-                  child: SizedBox(
-                height: 20,
-                child: Center(
-                  child: Image(
-                    image: context.brightness == Brightness.light
-                        ? AssetImage('assets/listennotes.png')
-                        : AssetImage('assets/listennotes_light.png'),
-                    height: 15,
-                  ),
-                ),
-              ))
-            ],
-          );
-        },
       ),
     );
   }
@@ -812,10 +656,7 @@ class _SearchResultDetailState extends State<SearchResultDetail>
   void initState() {
     super.initState();
 
-    _searchFuture = widget.searchEngine == SearchEngine.listenNotes
-        ? _getListenNotesEpisodes(
-            id: widget.onlinePodcast.id, nextEpisodeDate: _nextEpisdoeDate)
-        : _getIndexEpisodes(id: widget.onlinePodcast.rss);
+    _searchFuture = _getIndexEpisodes(id: widget.onlinePodcast.rss);
     _minHeight = widget.maxHeight / 2;
     _initSize = _minHeight;
     _slideDirection = SlideDirection.up;
@@ -833,17 +674,6 @@ class _SearchResultDetailState extends State<SearchResultDetail>
   void dispose() {
     _controller.dispose();
     super.dispose();
-  }
-
-  Future<List<OnlineEpisode>> _getListenNotesEpisodes(
-      {String id, int nextEpisodeDate}) async {
-    var searchEngine = ListenNotesSearch();
-    var searchResult = await searchEngine.fetchEpisode(
-        id: id, nextEpisodeDate: nextEpisodeDate);
-    _nextEpisdoeDate = searchResult.nextEpisodeDate;
-    _episodeList.addAll(searchResult.episodes.cast());
-    _loading = false;
-    return _episodeList;
   }
 
   Future<List<OnlineEpisode>> _getIndexEpisodes({String id}) async {
@@ -1112,25 +942,7 @@ class _SearchResultDetailState extends State<SearchResultDetail>
                                                   strokeWidth: 2,
                                                 ))
                                             : Text(context.s.loadMore),
-                                        onPressed: () {
-                                          if (widget.searchEngine ==
-                                              SearchEngine.listenNotes) {
-                                            _loading
-                                                ? null
-                                                : setState(
-                                                    () {
-                                                      _loading = true;
-                                                      _searchFuture =
-                                                          _getListenNotesEpisodes(
-                                                              id: widget
-                                                                  .onlinePodcast
-                                                                  .id,
-                                                              nextEpisodeDate:
-                                                                  _nextEpisdoeDate);
-                                                    },
-                                                  );
-                                          }
-                                        }),
+                                        onPressed: () {}),
                                   ),
                                 );
                               }

@@ -4,7 +4,6 @@ import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 
-import '../.env.dart';
 import '../home/about.dart';
 import '../type/search_api/index_episode.dart';
 import '../type/search_api/index_podcast.dart';
@@ -13,55 +12,9 @@ import '../type/search_api/search_top_podcast.dart';
 import '../type/search_api/searchepisodes.dart';
 import '../type/search_api/searchpodcast.dart';
 
+final environment = {"apiKey": "APIKEY"};
+
 enum SearchEngine { podcastIndex, listenNotes }
-
-class ListenNotesSearch {
-  final _dio = Dio(BaseOptions(connectTimeout: 30000, receiveTimeout: 90000));
-  final _baseUrl = "https://listen-api.listennotes.com/api/v2/";
-  final _apiKey = environment['apiKey'];
-
-  Future<SearchPodcast<dynamic>> searchPodcasts(
-      {String searchText, int nextOffset}) async {
-    var url = "${_baseUrl}search?q="
-        "${Uri.encodeComponent(searchText)}${"&sort_by_date=0&type=podcast&offset=$nextOffset"}";
-    var response = await _dio.get(url,
-        options: Options(headers: {
-          'X-ListenAPI-Key': "$_apiKey",
-          'Accept': "application/json"
-        }));
-    Map searchResultMap = jsonDecode(response.toString());
-    var searchResult = SearchPodcast.fromJson(searchResultMap);
-    return searchResult;
-  }
-
-  Future<SearchEpisodes<dynamic>> fetchEpisode(
-      {String id, int nextEpisodeDate}) async {
-    var url =
-        "${_baseUrl}podcasts/$id?next_episode_pub_date=$nextEpisodeDate";
-    var response = await _dio.get(url,
-        options: Options(headers: {
-          'X-ListenAPI-Key': "$_apiKey",
-          'Accept': "application/json"
-        }));
-    Map searchResultMap = jsonDecode(response.toString());
-    var searchResult = SearchEpisodes.fromJson(searchResultMap);
-    return searchResult;
-  }
-
-  Future<SearchTopPodcast<dynamic>> fetchBestPodcast(
-      {String genre, int page, String region = 'us'}) async {
-    var url =
-        "${_baseUrl}best_podcasts?genre_id=$genre&page=$page&region=$region";
-    var response = await Dio().get(url,
-        options: Options(headers: {
-          'X-ListenAPI-Key': "$_apiKey",
-          'Accept': "application/json"
-        }));
-    Map searchResultMap = jsonDecode(response.toString());
-    var searchResult = SearchTopPodcast.fromJson(searchResultMap);
-    return searchResult;
-  }
-}
 
 class ItunesSearch {
   Future<ItunesSearchResult<dynamic>> searchPodcasts(

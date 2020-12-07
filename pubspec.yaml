@@ -4,7 +4,7 @@ description: An open source podacasts player.
 version: 0.5.1+39
 
 environment:
-  sdk: ">=2.6.0 <3.0.0"
+  sdk: '>=2.10.0 <3.0.0'
 
 dependencies:
   flutter:
@@ -24,7 +24,10 @@ dependencies:
   device_info: ^0.4.2+8
   dio: ^3.0.10
   dio_cookie_manager: ^1.0.0
-  extended_nested_scroll_view: ^1.0.1
+  extended_nested_scroll_view:
+    git:
+      url: https://github.com/fluttercandies/extended_nested_scroll_view
+      ref: dev
   effective_dart: ^1.2.4
   equatable: ^1.2.5
   feature_discovery: ^0.12.1
