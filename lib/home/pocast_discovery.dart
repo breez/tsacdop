@@ -401,7 +401,7 @@ class __TopPodcastListState extends State<_TopPodcastList> {
     // final podcastTopList =
     //     searchResult.podcasts.map((e) => e?.toOnlinePodcast).toList();
     // _podcastList.addAll(podcastTopList.cast());
-    // _loading = false;
+    _loading = false;
     return _podcastList;
   }
 
